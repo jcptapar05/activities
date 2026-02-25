@@ -4,26 +4,18 @@ import Image from 'next/image';
 import { Button } from '../ui/button';
 import useAddToMyList from '@/lib/useMyList';
 import { Heart, HeartOff, Play, Star } from 'lucide-react';
-
-interface BannerProps {
-  id: number;
-  title: string;
-  poster_path: string;
-  description: string;
-  rating?: number;
-  year?: number;
-  genres?: string;
-}
+import { Movie } from '@/types/movie';
 
 function Banner({
   id,
   title,
   poster_path,
-  description,
-  rating,
-  year,
-  genres,
-}: BannerProps) {
+  overview,
+  vote_average,
+  release_date,
+  genre_ids,
+  media_type,
+}: Movie) {
   const { add, remove, isAdded } = useAddToMyList();
 
   const added = isAdded(id);
@@ -32,7 +24,8 @@ function Banner({
     if (added) {
       remove(id);
     } else {
-      add({ id, title, poster_path });
+      console.log(media_type);
+      add({ id, title, poster_path, media_type });
     }
   };
 
@@ -61,19 +54,19 @@ function Banner({
         <div className="flex flex-col gap-4">
           <h1 className="md:text-5xl text-3xl font-bold text-white">{title}</h1>
           <div className="flex items-center gap-2 text-sm text-gray-300">
-            {rating && (
+            {vote_average && (
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 text-yellow-400" />
-                <span>{rating}</span>
+                <span>{vote_average}</span>
                 <span>|</span>
               </div>
             )}
-            <span>{year}</span>
+            <span>{release_date}</span>
             <span>|</span>
-            <span>{genres}</span>
+            <span>{genre_ids}</span>
           </div>
           <p className="text-sm text-gray-300 max-w-md leading-relaxed line-clamp-3">
-            {description}
+            {overview}
           </p>
           <div className="flex gap-3">
             <Button variant="destructive" className="px-6">

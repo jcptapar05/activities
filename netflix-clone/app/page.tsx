@@ -5,14 +5,8 @@ import Loading from '@/components/loading/Loading';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import Banner from '@/components/banner/Banner';
-
-interface Movie {
-  id: number;
-  title: string;
-  poster_path: string;
-  media_type: 'movie' | 'tv';
-  name?: string;
-}
+import { Movie } from '@/types/movie';
+import Link from 'next/link';
 
 export default function Home() {
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -78,27 +72,42 @@ export default function Home() {
 
   if (isLoading) return <Loading />;
 
+  const {
+    id,
+    title,
+    poster_path,
+    overview,
+    vote_average,
+    release_date,
+    genre_ids,
+    media_type,
+  } = data?.pages[0].results[0];
+
   return (
     <div className="w-full">
       <Banner
-        id={data?.pages[0].results[0].id}
-        title={
-          data?.pages[0].results[0].title ||
-          data?.pages[0].results[0].name ||
-          ''
-        }
-        poster_path={data?.pages[0].results[0].poster_path}
-        description={data?.pages[0].results[0].overview || ''}
+        id={id}
+        title={title || name || ''}
+        poster_path={poster_path}
+        overview={overview || ''}
+        vote_average={vote_average}
+        release_date={release_date}
+        genre_ids={genre_ids}
+        media_type={media_type}
       />
 
       <div className="grid lg:grid-cols-5 md:grid-cols-3 grid-cols-1 gap-4 px-10">
         {data?.pages.map(page =>
           page.results.map((item: Movie) => (
-            <MovieCard
+            <Link
               key={`${item.media_type}-${item.id}`}
-              title={item.title || item.name || ''}
-              poster_path={item.poster_path}
-            />
+              href={`/${item.media_type === 'tv' ? 'series' : 'movies'}/${item.id}`}
+            >
+              <MovieCard
+                title={item.title || item.name || ''}
+                poster_path={item.poster_path}
+              />
+            </Link>
           ))
         )}
       </div>

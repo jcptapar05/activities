@@ -21,10 +21,11 @@ async function SeriesPage({ params }: { params: { id: string } }) {
       id={+id}
       title={name || ''}
       poster_path={poster_path || ''}
-      description={overview || ''}
-      rating={vote_average}
-      year={first_air_date}
-      genres={genres.map((genre: { name: string }) => genre.name).join(', ')}
+      overview={overview || ''}
+      vote_average={vote_average}
+      release_date={first_air_date}
+      genre_ids={genres.map((genre: { name: string }) => genre.name).join(', ')}
+      media_type="tv"
     />
   );
 }

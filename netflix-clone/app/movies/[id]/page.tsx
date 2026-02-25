@@ -27,10 +27,11 @@ async function MoviesPage({ params }: { params: { id: string } }) {
       id={+id}
       title={title}
       poster_path={poster_path}
-      description={description}
-      rating={vote_average}
-      year={release_date}
-      genres={genres.map((genre: { name: string }) => genre.name).join(', ')}
+      overview={description}
+      vote_average={vote_average}
+      release_date={release_date}
+      genre_ids={genres.map((genre: { name: string }) => genre.name).join(', ')}
+      media_type="movie"
     />
   );
 }

@@ -4,12 +4,8 @@ import axios from 'axios';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import Loading from '@/components/loading/Loading';
 import { useEffect, useRef } from 'react';
-
-interface Movie {
-  id: number;
-  title: string;
-  poster_path: string;
-}
+import { Movie } from '@/types/movie';
+import Link from 'next/link';
 
 function NewAndPopular() {
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -59,14 +55,18 @@ function NewAndPopular() {
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-5 gap-4 px-10">
         {data?.pages.map(page =>
           page.results.map((item: Movie) => (
-            <MovieCard
+            <Link
               key={item.id}
-              title={item.title}
-              poster_path={item.poster_path}
-            />
+              href={`/${item.media_type === 'tv' ? 'series' : 'movies'}/${item.id}`}
+            >
+              <MovieCard
+                title={item.title || ''}
+                poster_path={item.poster_path}
+              />
+            </Link>
           ))
         )}
       </div>

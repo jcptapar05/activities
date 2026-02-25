@@ -9,7 +9,7 @@ function MovieCard({
   poster_path?: string;
 }) {
   return (
-    <Card className="w-full h-full text-center cursor-pointer">
+    <Card className="w-full h-full text-center cursor-pointer hover:scale-105 transition-all duration-300">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>

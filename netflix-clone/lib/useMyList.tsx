@@ -2,22 +2,17 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-
-interface MyListItem {
-  id: number;
-  title: string;
-  poster_path: string;
-}
+import { Movie } from '@/types/movie';
 
 interface MyListContextType {
-  data: MyListItem[];
-  add: (item: MyListItem) => void;
+  data: Movie[];
+  add: (item: Movie) => void;
   remove: (id: number) => void;
   isAdded: (id: number) => boolean;
 }
 
 const KEY = 'my-list';
-const getList = (): MyListItem[] => {
+const getList = (): Movie[] => {
   if (typeof window === 'undefined') return [];
   return JSON.parse(localStorage.getItem(KEY) || '[]');
 };
@@ -25,13 +20,13 @@ const getList = (): MyListItem[] => {
 const MyListContext = createContext<MyListContextType | null>(null);
 
 export function MyListProvider({ children }: { children: React.ReactNode }) {
-  const [data, setData] = useState<MyListItem[]>([]);
+  const [data, setData] = useState<Movie[]>([]);
 
   useEffect(() => {
     setData(getList());
   }, []);
 
-  const add = (item: MyListItem) => {
+  const add = (item: Movie) => {
     if (data.some(i => i.id === item.id)) {
       toast.error('Already in My List');
       return;

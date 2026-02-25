@@ -6,16 +6,7 @@ import Loading from '@/components/loading/Loading';
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Banner from '@/components/banner/Banner';
-
-interface Movie {
-  id: number;
-  title: string;
-  poster_path: string;
-  media_type: string;
-  rating: number;
-  year: number;
-  genres: string;
-}
+import { Movie } from '@/types/movie';
 
 function MoviesPage() {
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -64,28 +55,34 @@ function MoviesPage() {
 
   if (isLoading) return <Loading />;
 
+  const {
+    id,
+    title,
+    poster_path,
+    overview,
+    vote_average,
+    release_date,
+    genre_ids,
+  } = data?.pages[0].results[0];
+
   return (
     <div className="w-full">
       <Banner
-        id={data?.pages[0].results[0].id}
-        title={
-          data?.pages[0].results[0].title ||
-          data?.pages[0].results[0].name ||
-          ''
-        }
-        poster_path={data?.pages[0].results[0].poster_path}
-        description={data?.pages[0].results[0].overview || ''}
-        rating={data?.pages[0].results[0].vote_average}
-        year={data?.pages[0].results[0].first_air_date}
-        genres={data?.pages[0].results[0].genre_ids}
+        id={id}
+        title={title || name || ''}
+        poster_path={poster_path}
+        overview={overview || ''}
+        vote_average={vote_average}
+        release_date={release_date}
+        genre_ids={genre_ids}
+        media_type="tv"
       />
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-5 gap-4 px-10">
         {data?.pages.map(page =>
           page.results.map((item: Movie) => (
             <Link key={item.id} href={`/series/${item.id}`}>
               <MovieCard
-                key={item.id}
-                title={item.title}
+                title={item.title || ''}
                 poster_path={item.poster_path}
               />
             </Link>
