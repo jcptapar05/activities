@@ -15,7 +15,9 @@ function Banner({
   release_date,
   genre_ids,
   media_type,
-}: Movie) {
+  onPlay,
+  showPlayBtn = false,
+}: Movie & { onPlay?: () => void; showPlayBtn?: boolean }) {
   const { add, remove, isAdded } = useAddToMyList();
 
   const added = isAdded(id);
@@ -24,7 +26,6 @@ function Banner({
     if (added) {
       remove(id);
     } else {
-      console.log(media_type);
       add({ id, title, poster_path, media_type });
     }
   };
@@ -41,7 +42,7 @@ function Banner({
     >
       <div className="absolute inset-0 bg-black/60 z-0" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-0" />
-      <div className="md:flex py-20 md:py-0 items-end z-10 gap-6 px-10 max-w-7xl">
+      <div className="md:flex py-20 md:py-0 items-center justify-center z-10 gap-6 px-10 max-w-7xl">
         <div className="relative min-w-[240px] hidden md:block h-[360px] rounded-lg overflow-hidden shadow-2xl">
           <Image
             src={`https://image.tmdb.org/t/p/original${poster_path}`}
@@ -69,13 +70,19 @@ function Banner({
             {overview}
           </p>
           <div className="flex gap-3">
-            <Button variant="destructive" className="px-6">
-              <Play className="w-4 h-4 mr-2" /> Play
-            </Button>
+            {showPlayBtn && (
+              <Button
+                variant="default"
+                className="px-6 cursor-pointer"
+                onClick={onPlay}
+              >
+                <Play className="w-4 h-4 mr-2" /> Play
+              </Button>
+            )}
             <Button
-              variant={added ? 'default' : 'secondary'}
+              variant={added ? 'outline' : 'secondary'}
               onClick={handleToggleMyList}
-              className="px-6"
+              className="px-6 cursor-pointer"
             >
               {added ? (
                 <>
