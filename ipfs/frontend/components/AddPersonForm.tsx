@@ -12,8 +12,8 @@ const schema = z.object({
   firstName: z.string().min(1, "Required").max(50),
   lastName: z.string().min(1, "Required").max(50),
   middleName: z.string().min(1, "Required").max(50),
-  cv: z.string().min(1, "Required").max(50),
-  photo: z.string().min(1, "Required").max(50),
+  // cv: z.string().min(1, "Required").max(50),
+  // photo: z.string().min(1, "Required").max(50),
   position: z.string().min(1, "Required").max(100),
 })
 

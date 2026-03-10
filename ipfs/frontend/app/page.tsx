@@ -1,6 +1,6 @@
 import AddPersonForm from "@/components/AddPersonForm"
 import GetPerson from "@/components/GetPerson"
-import GetPersons from "@/components/GetPersons"
+// import GetPersons from "@/components/GetPersons"
 
 export default function Page() {
   return (
@@ -10,7 +10,7 @@ export default function Page() {
           <h1 className="text-2xl font-semibold">Personnel Registry</h1>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-2">
           <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
             <AddPersonForm />
           </div>
@@ -19,9 +19,9 @@ export default function Page() {
             <GetPerson />
           </div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
+          {/* <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
             <GetPersons />
-          </div>
+          </div> */}
         </div>
       </div>
     </main>
