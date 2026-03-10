@@ -16,43 +16,19 @@ export default function GetPersons() {
 
     try {
       const contract = getReadContract()
-      const result = await contract.getPersons()
 
-      let persons: Person[] = []
+      const ids = await contract.getPersonIds()
+      const personsData = await contract.getPersons()
 
-      if (Array.isArray(result)) {
-        // supports either:
-        // 1) array of person structs
-        // 2) [wallets, persons]
-        if (
-          result.length === 2 &&
-          Array.isArray(result[0]) &&
-          Array.isArray(result[1])
-        ) {
-          const wallets = result[0]
-          const records = result[1]
-
-          persons = records.map((p: any, i: number) => ({
-            id: wallets[i],
-            first_name: p.first_name,
-            last_name: p.last_name,
-            middle_name: p.middle_name,
-            position: p.position,
-            cv: p.cv,
-            photo: p.photo,
-          }))
-        } else {
-          persons = result.map((p: any) => ({
-            id: p.id ?? p.wallet ?? p.addr ?? "",
-            first_name: p.first_name,
-            last_name: p.last_name,
-            middle_name: p.middle_name,
-            position: p.position,
-            cv: p.cv,
-            photo: p.photo,
-          }))
-        }
-      }
+      const persons: Person[] = personsData.map((p: any, i: number) => ({
+        id: ids[i],
+        first_name: p.first_name ?? p[0] ?? "",
+        last_name: p.last_name ?? p[1] ?? "",
+        middle_name: p.middle_name ?? p[2] ?? "",
+        position: p.position ?? p[3] ?? "",
+        cv: p.cv ?? p[4] ?? "",
+        photo: p.photo ?? p[5] ?? "",
+      }))
 
       setAllPersons(persons)
     } catch (err) {
@@ -66,6 +42,9 @@ export default function GetPersons() {
   return (
     <div className="space-y-4">
       <div>
+        <p className="mb-1 font-mono text-xs tracking-widest text-zinc-600 uppercase">
+          Component 3
+        </p>
         <h2 className="text-xl font-semibold">Get Persons</h2>
       </div>
 
