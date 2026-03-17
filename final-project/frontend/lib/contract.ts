@@ -252,7 +252,7 @@ export const fetchOwnedBooks = async (userAddress: string): Promise<Book[]> => {
   if (!window.ethereum) throw new Error("MetaMask not found")
   if (!userAddress) return []
 
-  const provider = new ethers.BrowserProvider(window.ethereum)
+  const provider = new ethers.JsonRpcProvider(RPC_URL)
   const contract = new ethers.Contract(
     CONTRACT_ADDRESS,
     BookStore.abi,
