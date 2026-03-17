@@ -7,7 +7,6 @@ import {
 import BookStore from "@/utils/BookStore.json"
 import { ethers } from "ethers"
 import { toast } from "sonner"
-import { z } from "zod"
 import { uploadFileToIPFS, uploadJSONToIPFS } from "./pinata"
 
 // You can move these constants to contract.ts as well
@@ -214,6 +213,7 @@ export const fetchOwnedBooks = async (userAddress: string): Promise<Book[]> => {
     author: book.authorName,
     price: Number(ethers.formatEther(book.price)),
     image: ipfsToGateway(book.image),
+    bookfile: ipfsToGateway(book.bookfile),
     listed: book.listed,
     owner: book.owner,
     genre: book.genre || "Unknown",

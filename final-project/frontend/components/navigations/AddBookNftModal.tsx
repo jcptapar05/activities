@@ -35,10 +35,10 @@ import { Loader2 } from "lucide-react"
 import { GENRES } from "@/utils/genre"
 import {
   createBookNFT,
-  CreateBookFormValues,
   MAX_IMAGE_SIZE_MB,
   MAX_BOOK_SIZE_MB,
 } from "@/lib/contract"
+import { CreateBookFormValues } from "@/lib/types"
 
 const AddBookNftModal = () => {
   const [open, setOpen] = useState(false)
