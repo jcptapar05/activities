@@ -4,7 +4,7 @@ import Image from "next/image"
 import { ethers } from "ethers"
 import { useMutation } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+// import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -324,6 +324,49 @@ const AddBookNftModal = () => {
                 </Alert>
               )}
             </FieldGroup>
+
+            {/* List instantly */}
+            <Field
+              orientation="vertical"
+              data-invalid={!!form.formState.errors.listed}
+              className="w-full"
+            >
+              {/* <FieldLabel className="mb-2 text-sm font-medium">
+                List Instantly
+              </FieldLabel> */}
+
+              <FieldContent>
+                <div className="flex items-start justify-between rounded-xl border p-4 transition hover:bg-muted/50">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">
+                      Automatically list after minting
+                    </p>
+                    <FieldDescription className="text-xs leading-relaxed text-muted-foreground">
+                      If enabled, your book will be listed on the marketplace
+                      immediately after minting. If disabled, price will be 0
+                      ETH and you can list it later.
+                    </FieldDescription>
+                  </div>
+
+                  {/* Toggle-style checkbox */}
+                  <label className="relative inline-flex cursor-pointer items-center">
+                    <Input
+                      type="checkbox"
+                      id="listed"
+                      {...form.register("listed")}
+                      disabled={isPending}
+                      className="peer sr-only"
+                    />
+
+                    <div className="h-6 w-11 rounded-full bg-muted transition peer-checked:bg-primary" />
+
+                    <div className="absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition peer-checked:translate-x-5" />
+                  </label>
+                </div>
+
+                <FieldError errors={[form.formState.errors.listed]} />
+              </FieldContent>
+            </Field>
 
             <div className="flex w-full items-center justify-between gap-4">
               <Button
