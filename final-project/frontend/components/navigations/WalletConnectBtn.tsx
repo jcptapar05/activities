@@ -1,4 +1,5 @@
 "use client"
+
 import React, { useEffect, useState } from "react"
 import { Button } from "../ui/button"
 import useAccount from "@/stores/Account"
@@ -15,27 +16,42 @@ const WalletConnectBtn = () => {
     }
 
     try {
-      const accounts = await window.ethereum.request({
+      const accounts: string[] = await window.ethereum.request({
         method: "eth_requestAccounts",
       })
 
-      setAccount(accounts[0])
-      setLocalAccount(accounts[0])
+      if (accounts.length > 0) {
+        setAccount(accounts[0])
+        setLocalAccount(accounts[0])
+      }
     } catch (error) {
       console.log(error)
     }
   }
 
-  const disconnectWallet = async () => {
+  const disconnectWallet = () => {
     setAccount("")
     setLocalAccount("")
   }
 
   useEffect(() => {
-    window.ethereum.on("accountsChanged", (accounts: string[]) => {
-      setAccount(accounts[0])
-      setLocalAccount(accounts[0])
-    })
+    if (!window.ethereum) return
+
+    const handleAccountsChanged = (accounts: string[]) => {
+      if (accounts.length === 0) {
+        // user disconnected wallet in MetaMask
+        disconnectWallet()
+      } else {
+        setAccount(accounts[0])
+        setLocalAccount(accounts[0])
+      }
+    }
+
+    window.ethereum.on("accountsChanged", handleAccountsChanged)
+
+    return () => {
+      window.ethereum?.removeListener("accountsChanged", handleAccountsChanged)
+    }
   }, [setAccount])
 
   if (!localAccount) {

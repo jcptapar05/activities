@@ -35,63 +35,77 @@ export const ipfsToGateway = (uri: string, gatewayIndex = 0) => {
   return `${IPFS_GATEWAYS[gatewayIndex]}${cid}`
 }
 
+const RPC_URL = `https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`
+
 export const fetchBooks = async (ownerAddress?: string): Promise<Book[]> => {
-  if (!window.ethereum) throw new Error("MetaMask not found")
-
-  const provider = new ethers.BrowserProvider(window.ethereum)
-  const contract = new ethers.Contract(
-    CONTRACT_ADDRESS,
-    BookStore.abi,
-    provider
-  )
-
-  let books: ContractBook[]
+  let provider
 
   try {
-    if (ownerAddress && ethers.isAddress(ownerAddress)) {
-      console.log("Fetching books for owner:", ownerAddress)
-      books = await contract.getBooksByOwner(ownerAddress)
-      console.log("Books by owner:", books)
+    if (typeof window !== "undefined" && window.ethereum) {
+      provider = new ethers.BrowserProvider(window.ethereum)
     } else {
-      console.log("Fetching all books")
-      books = await contract.getAllBooks()
-      console.log("All books:", books)
+      provider = new ethers.JsonRpcProvider(RPC_URL)
     }
-  } catch (error) {
-    console.error("Error fetching books:", error)
-    books = await contract.getAllBooks()
-  }
 
-  const booksWithMetadata = await Promise.all(
-    books.map(async (book, index) => {
-      try {
-        return {
-          id: Number(book.id),
-          title: book.title,
-          author: book.authorName,
-          price: Number(ethers.formatEther(book.price)),
-          image: ipfsToGateway(book.image),
-          genre: book.genre || "Unknown",
-          isbn: book.isbn || "",
-          owner: book.owner,
-          listed: book.listed,
-          createdAt: Date.now() - index * 86400000,
-        }
-      } catch (error) {
-        return {
-          id: Number(book.id),
-          title: book.title,
-          author: book.authorName,
-          price: Number(ethers.formatEther(book.price)),
-          image: ipfsToGateway(book.image),
-          owner: book.owner,
-          listed: book.listed,
-          createdAt: Date.now() - index * 86400000,
-        }
+    const contract = new ethers.Contract(
+      CONTRACT_ADDRESS,
+      BookStore.abi,
+      provider
+    )
+
+    let books: ContractBook[]
+
+    try {
+      if (ownerAddress && ethers.isAddress(ownerAddress)) {
+        console.log("Fetching books for owner:", ownerAddress)
+        books = await contract.getBooksByOwner(ownerAddress)
+        console.log("Books by owner:", books)
+      } else {
+        console.log("Fetching all books")
+        books = await contract.getAllBooks()
+        console.log("All books:", books)
       }
-    })
-  )
-  return booksWithMetadata
+    } catch (error) {
+      console.error("Error fetching specific books, fallback to all:", error)
+      books = await contract.getAllBooks()
+    }
+
+    const booksWithMetadata = await Promise.all(
+      books.map(async (book, index) => {
+        try {
+          return {
+            id: Number(book.id),
+            title: book.title,
+            author: book.authorName,
+            price: Number(ethers.formatEther(book.price)),
+            image: ipfsToGateway(book.image),
+            genre: book.genre || "Unknown",
+            isbn: book.isbn || "",
+            owner: book.owner,
+            listed: book.listed,
+            createdAt: Date.now() - index * 86400000,
+          }
+        } catch (error) {
+          console.error("Error parsing book:", error)
+          return {
+            id: Number(book.id),
+            title: book.title,
+            author: book.authorName,
+            price: Number(ethers.formatEther(book.price)),
+            image: ipfsToGateway(book.image),
+            owner: book.owner,
+            listed: book.listed,
+            createdAt: Date.now() - index * 86400000,
+          }
+        }
+      })
+    )
+
+    return booksWithMetadata
+  } catch (error) {
+    console.error("Fatal error fetching books:", error)
+    throw error
+  }
 }
 
 export const createBookFormSchema = z.object({
