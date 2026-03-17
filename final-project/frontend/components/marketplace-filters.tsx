@@ -251,7 +251,6 @@ export const MarketplaceFilters = ({
             </AccordionContent>
           </AccordionItem>
 
-          {/* Price Range Filter */}
           <AccordionItem value="price">
             <AccordionTrigger className="py-2 text-sm">
               Price Range (ETH)
@@ -261,41 +260,63 @@ export const MarketplaceFilters = ({
                 <Slider
                   min={0}
                   max={10}
-                  step={0.1}
+                  step={0.0001}
                   value={priceRange || [0, 10]}
-                  onValueChange={handlePriceRangeChange}
+                  onValueChange={(val) => {
+                    setPriceRange(val)
+                    setMinPrice(val[0])
+                    setMaxPrice(val[1])
+                  }}
                   className="w-full"
                 />
+
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex-1">
                     <Input
                       type="number"
                       min={0}
-                      step={0.1}
+                      step={0.0001}
                       placeholder="Min"
-                      value={minPrice || ""}
+                      value={minPrice ?? ""}
                       onChange={(e) => {
                         const val = e.target.value
-                        setMinPrice(Number(val))
-                        if (maxPrice) {
-                          setPriceRange([Number(val) || 0, Number(maxPrice)])
+                        if (val === "") {
+                          setMinPrice(0.0001)
+                          return
+                        }
+
+                        const parsed = parseFloat(val)
+
+                        if (!isNaN(parsed)) {
+                          setMinPrice(parsed)
+                          setPriceRange([parsed, maxPrice ?? parsed])
                         }
                       }}
                     />
                   </div>
+
                   <span className="text-muted-foreground">to</span>
+
                   <div className="flex-1">
                     <Input
                       type="number"
                       min={0}
-                      step={0.1}
+                      step={0.0001}
                       placeholder="Max"
-                      value={maxPrice || ""}
+                      value={maxPrice ?? ""}
                       onChange={(e) => {
                         const val = e.target.value
-                        setMaxPrice(Number(val))
-                        if (minPrice) {
-                          setPriceRange([Number(minPrice), Number(val) || 0])
+
+                        if (val === "") {
+                          setMaxPrice(10000)
+                          return
+                        }
+
+                        const parsed = parseFloat(val)
+
+                        if (!isNaN(parsed)) {
+                          setMaxPrice(parsed)
+                          setPriceRange([minPrice ?? 0, parsed])
                         }
                       }}
                     />

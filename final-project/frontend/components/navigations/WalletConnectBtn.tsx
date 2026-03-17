@@ -39,7 +39,6 @@ const WalletConnectBtn = () => {
 
     const handleAccountsChanged = (accounts: string[]) => {
       if (accounts.length === 0) {
-        // user disconnected wallet in MetaMask
         disconnectWallet()
       } else {
         setAccount(accounts[0])

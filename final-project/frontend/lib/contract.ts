@@ -1,10 +1,14 @@
-import { Book, ContractBook } from "@/lib/types"
+import {
+  Book,
+  ContractBook,
+  CreateBookFormValues,
+  CreateBookResult,
+} from "@/lib/types"
 import BookStore from "@/utils/BookStore.json"
 import { ethers } from "ethers"
 import { toast } from "sonner"
 import { z } from "zod"
 import { uploadFileToIPFS, uploadJSONToIPFS } from "./pinata"
-import { GENRES } from "@/utils/genre"
 
 // You can move these constants to contract.ts as well
 export const MAX_IMAGE_SIZE_MB = 10
@@ -23,10 +27,10 @@ export const CONTRACT_ADDRESS = "0xBdeAB1b84741e40039194F9C5662076da5880151"
 export const ISBN_REGEX = /^(?:\d{9}[\dX]|\d{13})$/
 
 const IPFS_GATEWAYS = [
-  "https://ipfs.io/ipfs/",
+  "https://gateway.pinata.cloud/ipfs/",
   "https://cloudflare-ipfs.com/ipfs/",
   "https://dweb.link/ipfs/",
-  "https://gateway.pinata.cloud/ipfs/",
+  "https://ipfs.io/ipfs/",
 ]
 
 export const ipfsToGateway = (uri: string, gatewayIndex = 0) => {
@@ -108,56 +112,6 @@ export const fetchBooks = async (ownerAddress?: string): Promise<Book[]> => {
   }
 }
 
-export const createBookFormSchema = z.object({
-  title: z
-    .string()
-    .min(1, "Title is required")
-    .max(200, "Title must be less than 200 characters"),
-  authorName: z
-    .string()
-    .min(1, "Author name is required")
-    .max(100, "Author name must be less than 100 characters"),
-  isbn: z
-    .string()
-    .refine((val) => val === "" || ISBN_REGEX.test(val), {
-      message: "Please enter a valid ISBN-10 or ISBN-13",
-    })
-    .optional()
-    .default(""),
-  genre: z.enum(GENRES).optional(),
-  price: z
-    .string()
-    .min(1, "Price is required")
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-      message: "Price must be a positive number",
-    }),
-  listed: z.boolean().default(true),
-  coverImage: z
-    .instanceof(File, { message: "Cover image is required" })
-    .refine((f) => ACCEPTED_IMAGE_TYPES.includes(f.type), {
-      message: "Cover must be a JPEG, PNG, WebP, or GIF",
-    })
-    .refine((f) => f.size <= MAX_IMAGE_BYTES, {
-      message: `Cover image must be smaller than ${MAX_IMAGE_SIZE_MB}MB`,
-    }),
-  bookfile: z
-    .instanceof(File, { message: "Book file is required" })
-    .refine((f) => f.type === "application/pdf", {
-      message: "Book file must be a PDF",
-    })
-    .refine((f) => f.size <= MAX_BOOK_BYTES, {
-      message: `Book file must be smaller than ${MAX_BOOK_SIZE_MB}MB`,
-    }),
-})
-
-export type CreateBookFormValues = z.infer<typeof createBookFormSchema>
-
-export interface CreateBookResult {
-  txHash: string
-  image: string
-  metadataUrl: string
-}
-
 export async function createBookNFT(
   values: CreateBookFormValues,
   signer: ethers.Signer
@@ -217,17 +171,14 @@ export async function createBookNFT(
     values.isbn || "N/A"
   )
 
-  // Wait for receipt safely
   let receipt: ethers.TransactionReceipt | null = null
 
   try {
     receipt = await tx.wait()
   } catch (_waitErr) {
-    // tx.wait() threw — poll for the receipt manually
     receipt = await provider.getTransactionReceipt(tx.hash)
   }
 
-  // If receipt is still null, keep polling up to ~30 s
   if (!receipt) {
     for (let i = 0; i < 15; i++) {
       await new Promise((r) => setTimeout(r, 2000))
@@ -236,7 +187,6 @@ export async function createBookNFT(
     }
   }
 
-  // Genuine on-chain failure
   if (!receipt || receipt.status === 0) {
     throw new Error("Transaction failed on-chain. Please try again.")
   }
