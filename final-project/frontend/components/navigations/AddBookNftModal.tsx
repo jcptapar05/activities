@@ -105,7 +105,6 @@ const AddBookNftModal = () => {
   const [previewUrl, setPreviewUrl] = useState("")
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       authorName: "",
