@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react"
 import Image from "next/image"
 import { Loader2 } from "lucide-react"
-import { IconCurrencyEthereum } from "@tabler/icons-react"
+import { IconCopy, IconCurrencyEthereum } from "@tabler/icons-react"
 import { toast } from "sonner"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -89,7 +89,18 @@ const BookCard = ({ book, refetch }: BookCardProps) => {
           {book.title}
         </h3>
         <p className="text-sm text-muted-foreground">{book.author}</p>
-        <p className="text-sm text-muted-foreground">{book.genre}</p>
+        <p className="text-xs text-muted-foreground">Genre: {book.genre}</p>
+        <p className="text-xs text-muted-foreground">ISBN: {book.isbn}</p>
+        <p className="flex items-center gap-1 text-xs text-muted-foreground">
+          Owner: {book?.owner?.slice(0, 6)}...{book?.owner?.slice(-4)}{" "}
+          <IconCopy
+            onClick={() => {
+              navigator.clipboard.writeText(book?.owner || "")
+              toast.success("Owner address copied to clipboard")
+            }}
+            className="h-4 w-4 cursor-pointer"
+          />
+        </p>
       </CardContent>
 
       <CardFooter className="flex flex-col items-start gap-3 px-4 pt-2 pb-4">
