@@ -15,11 +15,12 @@ export type ContractBook = {
   authorName: string
   price: number | bigint
   image: string
+  bookfile: string
   listed: boolean
-  metadata?: {
-    genre?: string
-    isbn?: string
-  }
+  // metadata?: {
+  //   genre?: string
+  //   isbn?: string
+  // }
   genre?: string
   isbn?: string
   owner?: string
@@ -31,16 +32,17 @@ export type Book = {
   author: string
   price: number
   image: string
+  bookfile: string
+  listed?: boolean
   genre?: string
   isbn?: string
   contractAddress?: string
-  listed?: boolean
   createdAt?: number
   owner?: string
-  metadata?: {
-    genre?: string
-    isbn?: string
-  }
+  // metadata?: {
+  //   genre?: string
+  //   isbn?: string
+  // }
 }
 
 export const createBookFormSchema = z.object({

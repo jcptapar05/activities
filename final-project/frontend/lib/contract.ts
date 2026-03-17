@@ -26,17 +26,12 @@ export const CONTRACT_ADDRESS = "0xBdeAB1b84741e40039194F9C5662076da5880151"
 
 export const ISBN_REGEX = /^(?:\d{9}[\dX]|\d{13})$/
 
-const IPFS_GATEWAYS = [
-  "https://gateway.pinata.cloud/ipfs/",
-  "https://cloudflare-ipfs.com/ipfs/",
-  "https://dweb.link/ipfs/",
-  "https://ipfs.io/ipfs/",
-]
+const IPFS_GATEWAYS = "https://gateway.pinata.cloud/ipfs/"
 
-export const ipfsToGateway = (uri: string, gatewayIndex = 0) => {
+export const ipfsToGateway = (uri: string) => {
   if (!uri.startsWith("ipfs://")) return uri
   const cid = uri.replace("ipfs://", "")
-  return `${IPFS_GATEWAYS[gatewayIndex]}${cid}`
+  return `${IPFS_GATEWAYS}${cid}`
 }
 
 const RPC_URL = `https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`
@@ -83,11 +78,12 @@ export const fetchBooks = async (ownerAddress?: string): Promise<Book[]> => {
             author: book.authorName,
             price: Number(ethers.formatEther(book.price)),
             image: ipfsToGateway(book.image),
+            bookfile: ipfsToGateway(book.bookfile),
+            listed: book.listed,
             genre: book.genre || "Unknown",
             isbn: book.isbn || "",
             owner: book.owner,
-            listed: book.listed,
-            createdAt: Date.now() - index * 86400000,
+            // createdAt: Date.now() - index * 86400000,
           }
         } catch (error) {
           console.error("Error parsing book:", error)
@@ -97,9 +93,10 @@ export const fetchBooks = async (ownerAddress?: string): Promise<Book[]> => {
             author: book.authorName,
             price: Number(ethers.formatEther(book.price)),
             image: ipfsToGateway(book.image),
-            owner: book.owner,
+            bookfile: ipfsToGateway(book.bookfile),
             listed: book.listed,
-            createdAt: Date.now() - index * 86400000,
+            owner: book.owner,
+            // createdAt: Date.now() - index * 86400000,
           }
         }
       })

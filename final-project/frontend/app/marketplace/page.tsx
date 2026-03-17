@@ -84,8 +84,8 @@ function MarketplaceContent() {
       )
     }
 
-    if (filters.listed !== false) {
-      filtered = filtered.filter((book) => book.listed === false)
+    if (filters.listed === true) {
+      filtered = filtered.filter((book) => book.listed === true)
     }
 
     switch (filters.sort) {
