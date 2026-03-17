@@ -18,7 +18,6 @@ interface BookCardProps {
 }
 
 const BookCard = ({ book, refetch }: BookCardProps) => {
-  console.log(book)
   const [isLoading, setIsLoading] = useState(false)
   const [showPriceInput, setShowPriceInput] = useState(false)
   const [price, setPrice] = useState("")

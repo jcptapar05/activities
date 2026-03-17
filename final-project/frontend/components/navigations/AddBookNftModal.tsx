@@ -67,9 +67,7 @@ const formSchema = z.object({
     })
     .optional()
     .default(""),
-  genre: z.enum(GENRES, {
-    required_error: "Please select a genre",
-  }),
+  genre: z.enum(GENRES).optional(),
   price: z
     .string()
     .min(1, "Price is required")

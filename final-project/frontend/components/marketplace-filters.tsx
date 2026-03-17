@@ -72,19 +72,19 @@ export const MarketplaceFilters = ({
     shallow: false,
   })
   const [minPrice, setMinPrice] = useQueryState("minPrice", {
-    defaultValue: "",
+    defaultValue: 0,
     shallow: false,
     parse: (value) => (value ? Number(value) : undefined),
     serialize: (value) => value?.toString() ?? "",
   })
   const [maxPrice, setMaxPrice] = useQueryState("maxPrice", {
-    defaultValue: "",
+    defaultValue: 0,
     shallow: false,
     parse: (value) => (value ? Number(value) : undefined),
     serialize: (value) => value?.toString() ?? "",
   })
   const [onlyListed, setOnlyListed] = useQueryState("listed", {
-    defaultValue: "true",
+    defaultValue: true,
     shallow: false,
     parse: (value) => value === "true",
     serialize: (value) => value.toString(),
@@ -96,7 +96,7 @@ export const MarketplaceFilters = ({
 
   // Price range for slider
   const [priceRange, setPriceRange] = useQueryState("priceRange", {
-    defaultValue: "",
+    defaultValue: [0, 10],
     shallow: false,
     parse: (value) => {
       if (!value) return [0, 10]
@@ -129,13 +129,13 @@ export const MarketplaceFilters = ({
     setMaxPrice(null)
     setPriceRange(null)
     setSortBy("newest")
-    setOnlyListed("true")
+    setOnlyListed(true)
   }
 
   const handlePriceRangeChange = (value: number[]) => {
     setPriceRange(value)
-    setMinPrice(value[0].toString())
-    setMaxPrice(value[1].toString())
+    setMinPrice(value[0])
+    setMaxPrice(value[1])
   }
 
   return (
@@ -242,10 +242,8 @@ export const MarketplaceFilters = ({
                     </div>
                     <Switch
                       id="listed"
-                      checked={onlyListed === "true"}
-                      onCheckedChange={(checked) =>
-                        setOnlyListed(checked ? "true" : "false")
-                      }
+                      checked={onlyListed}
+                      onCheckedChange={(checked) => setOnlyListed(checked)}
                     />
                   </div>
                 </div>
@@ -278,7 +276,7 @@ export const MarketplaceFilters = ({
                       value={minPrice || ""}
                       onChange={(e) => {
                         const val = e.target.value
-                        setMinPrice(val || null)
+                        setMinPrice(Number(val))
                         if (maxPrice) {
                           setPriceRange([Number(val) || 0, Number(maxPrice)])
                         }
@@ -295,7 +293,7 @@ export const MarketplaceFilters = ({
                       value={maxPrice || ""}
                       onChange={(e) => {
                         const val = e.target.value
-                        setMaxPrice(val || null)
+                        setMaxPrice(Number(val))
                         if (minPrice) {
                           setPriceRange([Number(minPrice), Number(val) || 0])
                         }
@@ -356,7 +354,7 @@ export const MarketplaceFilters = ({
               search: search || undefined,
               genre: genre || undefined,
               author: author || undefined,
-              contractAddress: contractAddress || undefined,
+              contractAddress: owner || undefined,
               minPrice: minPrice || undefined,
               maxPrice: maxPrice || undefined,
               onlyListed: onlyListed,
