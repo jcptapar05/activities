@@ -131,9 +131,9 @@ const BookCard = ({ book, refetch }: BookCardProps) => {
                 <div className="flex w-full items-center gap-2">
                   <Input
                     type="number"
-                    step="0.001"
+                    step="0.00001"
                     min="0"
-                    placeholder="Price in ETH"
+                    placeholder="Price in ETH (e.g., 0.00001 for 0.00001 ETH)"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     className="flex-1"

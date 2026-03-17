@@ -229,8 +229,8 @@ const AddBookNftModal = () => {
                     id="price"
                     type="number"
                     min="0"
-                    step="0.001"
-                    placeholder="0.001"
+                    step="0.00001"
+                    placeholder="0.00001"
                     {...form.register("price")}
                     disabled={isPending || !isListed}
                     aria-invalid={!!form.formState.errors.price}
@@ -238,7 +238,7 @@ const AddBookNftModal = () => {
                   <FieldDescription className="text-xs text-muted-foreground">
                     {!isListed
                       ? "Price will be set to 0 ETH since this book is unlisted."
-                      : "Enter the price in ETH (e.g., 0.001 for 0.001 ETH)"}
+                      : "Enter the price in ETH (e.g., 0.00001 for 0.00001 ETH)"}
                   </FieldDescription>
                   <FieldError errors={[form.formState.errors.price]} />
                 </FieldContent>
