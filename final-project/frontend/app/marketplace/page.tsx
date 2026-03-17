@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useQueryStates, parseAsBoolean, parseAsString } from "nuqs"
 import { useState, useMemo, useEffect } from "react"
@@ -22,7 +23,7 @@ import { fetchBooks } from "@/lib/contract"
 
 const ITEMS_PER_PAGE = 9
 
-const Marketplace = () => {
+function MarketplaceContent() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -268,4 +269,20 @@ const Marketplace = () => {
   )
 }
 
-export default Marketplace
+export default function Marketplace() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto py-8">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-[300px] rounded-xl" />
+            ))}
+          </div>
+        </div>
+      }
+    >
+      <MarketplaceContent />
+    </Suspense>
+  )
+}

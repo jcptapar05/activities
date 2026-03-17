@@ -1,13 +1,10 @@
 "use client"
-
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { ethers } from "ethers"
 import { useMutation } from "@tanstack/react-query"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import z from "zod"
-import { uploadFileToIPFS, uploadJSONToIPFS } from "@/lib/pinata"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -35,76 +32,20 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
-import BookStore from "@/utils/BookStore.json"
 import { GENRES } from "@/utils/genre"
-import { CONTRACT_ADDRESS } from "@/lib/contract"
-
-const ISBN_REGEX = /^(?:\d{9}[\dX]|\d{13})$/
-const MAX_IMAGE_SIZE_MB = 10
-const MAX_BOOK_SIZE_MB = 50
-const MAX_IMAGE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
-const MAX_BOOK_BYTES = MAX_BOOK_SIZE_MB * 1024 * 1024
-const ACCEPTED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-]
-
-const formSchema = z.object({
-  title: z
-    .string()
-    .min(1, "Title is required")
-    .max(200, "Title must be less than 200 characters"),
-  authorName: z
-    .string()
-    .min(1, "Author name is required")
-    .max(100, "Author name must be less than 100 characters"),
-  isbn: z
-    .string()
-    .refine((val) => val === "" || ISBN_REGEX.test(val), {
-      message: "Please enter a valid ISBN-10 or ISBN-13",
-    })
-    .optional()
-    .default(""),
-  genre: z.enum(GENRES).optional(),
-  price: z
-    .string()
-    .min(1, "Price is required")
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-      message: "Price must be a positive number",
-    }),
-  listed: z.boolean().default(true),
-  coverImage: z
-    .instanceof(File, { message: "Cover image is required" })
-    .refine((f) => ACCEPTED_IMAGE_TYPES.includes(f.type), {
-      message: "Cover must be a JPEG, PNG, WebP, or GIF",
-    })
-    .refine((f) => f.size <= MAX_IMAGE_BYTES, {
-      message: `Cover image must be smaller than ${MAX_IMAGE_SIZE_MB}MB`,
-    }),
-  bookfile: z
-    .instanceof(File, { message: "Book file is required" })
-    .refine((f) => f.type === "application/pdf", {
-      message: "Book file must be a PDF",
-    })
-    .refine((f) => f.size <= MAX_BOOK_BYTES, {
-      message: `Book file must be smaller than ${MAX_BOOK_SIZE_MB}MB`,
-    }),
-})
-
-type FormValues = z.infer<typeof formSchema>
-
-const ipfsToGateway = (uri: string) => {
-  if (!uri.startsWith("ipfs://")) return uri
-  return `https://gateway.pinata.cloud/ipfs/${uri.replace("ipfs://", "")}`
-}
+import {
+  createBookNFT,
+  CreateBookFormValues,
+  MAX_IMAGE_SIZE_MB,
+  MAX_BOOK_SIZE_MB,
+} from "@/lib/contract"
 
 const AddBookNftModal = () => {
   const [open, setOpen] = useState(false)
   const [previewUrl, setPreviewUrl] = useState("")
 
-  const form = useForm<FormValues>({
+  const form = useForm<CreateBookFormValues>({
+    // resolver: zodResolver(createBookFormSchema),
     defaultValues: {
       title: "",
       authorName: "",
@@ -135,107 +76,10 @@ const AddBookNftModal = () => {
   }
 
   const createBookMutation = useMutation({
-    mutationFn: async (values: FormValues) => {
-      // ── 1. Wallet check ────────────────────────────────────────────────────
-      if (!window.ethereum) {
-        throw new Error("MetaMask is not installed.")
-      }
-
-      const cleanTitle = values.title.trim()
-      const cleanAuthorName = values.authorName.trim()
-
-      // ── 2. Upload files to IPFS ────────────────────────────────────────────
-      // These only run AFTER zod validation passes, so bad files never upload.
-      let imageGatewayUrl: string
-      let bookfileGatewayUrl: string
-      let metadataGatewayUrl: string
-
-      try {
-        imageGatewayUrl = ipfsToGateway(
-          await uploadFileToIPFS(values.coverImage)
-        )
-        bookfileGatewayUrl = ipfsToGateway(
-          await uploadFileToIPFS(values.bookfile)
-        )
-      } catch (err) {
-        throw new Error("Failed to upload files to IPFS. Please try again.")
-      }
-
-      // ── 3. Upload metadata ─────────────────────────────────────────────────
-      try {
-        const metadata = {
-          name: cleanTitle,
-          description: `${cleanTitle} by ${cleanAuthorName}`,
-          image: imageGatewayUrl,
-          bookfile: bookfileGatewayUrl,
-          attributes: [
-            { trait_type: "Author", value: cleanAuthorName },
-            { trait_type: "ISBN", value: values.isbn || "N/A" },
-            { trait_type: "Genre", value: values.genre },
-            { trait_type: "Listed", value: values.listed ? "Yes" : "No" },
-          ],
-        }
-        metadataGatewayUrl = ipfsToGateway(await uploadJSONToIPFS(metadata))
-      } catch (err) {
-        throw new Error("Failed to upload metadata to IPFS. Please try again.")
-      }
-
-      // ── 4. Send transaction ────────────────────────────────────────────────
+    mutationFn: async (values: CreateBookFormValues) => {
       const provider = new ethers.BrowserProvider(window.ethereum)
       const signer = await provider.getSigner()
-      const userAddress = await signer.getAddress()
-
-      const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        BookStore.abi,
-        signer
-      )
-
-      const finalPrice = values.listed ? ethers.parseEther(values.price) : 0n
-
-      const tx = await contract.mint(
-        userAddress,
-        cleanTitle,
-        cleanAuthorName,
-        finalPrice,
-        imageGatewayUrl,
-        bookfileGatewayUrl,
-        metadataGatewayUrl,
-        values.genre,
-        values.isbn || "N/A"
-      )
-
-      // ── 5. Wait for receipt safely ─────────────────────────────────────────
-      // ethers v6 tx.wait() can throw a coalesce/parse error even when the tx
-      // succeeds on-chain. We fall back to manually fetching the receipt.
-      let receipt: ethers.TransactionReceipt | null = null
-
-      try {
-        receipt = await tx.wait()
-      } catch (_waitErr) {
-        // tx.wait() threw — poll for the receipt manually
-        receipt = await provider.getTransactionReceipt(tx.hash)
-      }
-
-      // If receipt is still null, keep polling up to ~30 s
-      if (!receipt) {
-        for (let i = 0; i < 15; i++) {
-          await new Promise((r) => setTimeout(r, 2000))
-          receipt = await provider.getTransactionReceipt(tx.hash)
-          if (receipt) break
-        }
-      }
-
-      // Genuine on-chain failure
-      if (!receipt || receipt.status === 0) {
-        throw new Error("Transaction failed on-chain. Please try again.")
-      }
-
-      return {
-        txHash: tx.hash,
-        image: imageGatewayUrl,
-        metadataUrl: metadataGatewayUrl,
-      }
+      return createBookNFT(values, signer)
     },
 
     onSuccess: () => {
@@ -251,7 +95,7 @@ const AddBookNftModal = () => {
     },
   })
 
-  const onSubmit = (values: FormValues) => {
+  const onSubmit = (values: CreateBookFormValues) => {
     createBookMutation.mutate(values)
   }
 
